@@ -23,7 +23,7 @@
     body {
       margin: 0;
       background: var(--fondo);
-      height: calc(var(--vh, 1vh) * 100);
+      height: calc(var(--vh, 1vh) * 90); /* 🔽 reducido para que quepa entero */
       display: flex;
       justify-content: center;
       align-items: center;
@@ -35,7 +35,7 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: calc(var(--vh, 1vh) * 100);
+      height: calc(var(--vh, 1vh) * 95); /* 🔽 reducido ligeramente */
       width: 100%;
       border-left: 3px solid var(--morado);
       border-right: 3px solid var(--morado);
@@ -167,118 +167,5 @@
       <button id="send">Enviar</button>
     </div>
   </div>
-
-  <script>
-    // Ajuste dinámico del viewport real en móviles (para evitar saltos del teclado)
-    function setRealVH() {
-      const vh = window.innerHeight * 0.01;
-      document.documentElement.style.setProperty('--vh', `${vh}px`);
-    }
-    setRealVH();
-    window.addEventListener('resize', setRealVH);
-    window.visualViewport?.addEventListener('resize', setRealVH);
-
-    const WEBHOOK_URL =
-      "https://n8n-n8n.dts4ar.easypanel.host/webhook/3879389e-9d57-4198-a403-c95b42860834";
-    const messagesEl = document.getElementById("messages");
-    const inputEl = document.getElementById("prompt");
-    const sendBtn = document.getElementById("send");
-
-    const sessionId = (() => {
-      const key = "chat_session";
-      let v = localStorage.getItem(key);
-      if (!v) {
-        v = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
-        localStorage.setItem(key, v);
-      }
-      return v;
-    })();
-
-    const history = [];
-
-    // 👇 Scroll manual, solo baja al enviar usuario
-    function scrollToBottom() {
-      messagesEl.scrollTop = messagesEl.scrollHeight;
-    }
-
-    function addBubble(text, from = "bot", typingEffect = false) {
-      const div = document.createElement("div");
-      div.className = `bubble ${from === "user" ? "user" : "bot"}`;
-      div.style.whiteSpace = "pre-line";
-      messagesEl.appendChild(div);
-
-      if (typingEffect && from === "bot") {
-        let i = 0;
-        const speed = 10;
-        const formattedText = text
-          .replace(/\\n/g, "<br>")
-          .replace(/\n/g, "<br>")
-          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-        function typeChar() {
-          if (i < formattedText.length) {
-            div.innerHTML = formattedText.slice(0, i);
-            i++;
-            setTimeout(typeChar, speed);
-          }
-        }
-        typeChar();
-      } else {
-        div.innerHTML = text
-          .replace(/\\n/g, "<br>")
-          .replace(/\n/g, "<br>")
-          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-      }
-      return div;
-    }
-
-    async function sendMessage() {
-      const text = (inputEl.value || "").trim();
-      if (!text) return;
-      addBubble(text, "user");
-      inputEl.value = "";
-      scrollToBottom(); // 👈 baja solo cuando envías tú
-
-      const typingEl = addBubble("Escribiendo...", "bot");
-
-      try {
-        const payload = { message: text, sessionId, history, source: "frontend" };
-        const res = await fetch(WEBHOOK_URL, {
-          method: "POST",
-          mode: "cors",
-          headers: { "Content-Type": "application/json", "Accept": "*/*" },
-          body: JSON.stringify(payload)
-        });
-
-        const rawText = await res.text();
-        let replyText = rawText;
-        try {
-          const data = JSON.parse(rawText);
-          replyText = data.reply || data.text || data.data || JSON.stringify(data);
-        } catch { }
-
-        typingEl.remove();
-        addBubble(replyText || "Sin respuesta del servidor.", "bot", true);
-
-      } catch (err) {
-        console.error("Error de conexión:", err);
-        typingEl.remove();
-        addBubble("Error de conexión con el servidor.", "bot");
-      }
-    }
-
-    sendBtn.addEventListener("click", sendMessage);
-    inputEl.addEventListener("keydown", e => {
-      if (e.key === "Enter" && !e.shiftKey) {
-        e.preventDefault();
-        sendMessage();
-      }
-    });
-
-    // Evita zoom al hacer foco en input (móviles)
-    inputEl.addEventListener("focus", () => {
-      document.body.style.transform = "scale(1)";
-      setTimeout(() => window.scrollTo(0, document.body.scrollHeight), 50);
-    });
-  </script>
 </body>
 </html>
