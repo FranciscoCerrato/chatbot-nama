@@ -167,24 +167,25 @@
     const inputEl = document.getElementById("prompt");
     const sendBtn = document.getElementById("send");
 
-   // 🟣 Control fluido de autoscroll
+  // 🚀 Control ultrarrápido de autoscroll
 let userScrolling = false;
 let autoScrollEnabled = true;
 
+// Detecta si el usuario está leyendo arriba
 messagesEl.addEventListener("scroll", () => {
   const nearBottom =
-    messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 80;
+    messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 60;
   autoScrollEnabled = nearBottom;
   userScrolling = !nearBottom;
 });
 
+// Scroll inmediato y sin animación
 function scrollToEnd(force = false) {
-  // Scroll inmediato si el usuario está abajo o si se fuerza
   if (autoScrollEnabled || force) {
     messagesEl.scrollTop = messagesEl.scrollHeight;
   }
 }
-
+    
     const sessionId = (() => {
       const key = "chat_session";
       let v = localStorage.getItem(key);
@@ -206,7 +207,7 @@ function scrollToEnd(force = false) {
 
       if (typingEffect && from === "bot") {
         let i = 0;
-        const speed = 15;
+        const speed = 10;
         const formattedText = text
           .replace(/\\n/g, "<br>")
           .replace(/\n/g, "<br>")
