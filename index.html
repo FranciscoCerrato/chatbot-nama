@@ -160,28 +160,28 @@
     }
     setRealVH();
     window.addEventListener('resize', setRealVH);
-    window.visualViewport?.addEventListener('resize', setRealVH); // ✅ Nueva línea añadida
+    window.visualViewport?.addEventListener('resize', setRealVH);
 
     const WEBHOOK_URL = "https://n8n-n8n.dts4ar.easypanel.host/webhook/3879389e-9d57-4198-a403-c95b42860834";
     const messagesEl = document.getElementById("messages");
     const inputEl = document.getElementById("prompt");
     const sendBtn = document.getElementById("send");
 
-    let autoScroll = true;
+    // 🧭 Nuevo control preciso de autoscroll
+    let userScrolling = false;
+    let autoScrollEnabled = true;
 
     messagesEl.addEventListener("scroll", () => {
-      const isAtBottom = messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 50;
-      autoScroll = isAtBottom;
+      const nearBottom =
+        messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 80;
+
+      autoScrollEnabled = nearBottom;
+      userScrolling = !nearBottom;
     });
 
     function scrollToEnd(force = false) {
-      if (autoScroll || force) {
-        setTimeout(() => {
-          messagesEl.scrollTo({
-            top: messagesEl.scrollHeight,
-            behavior: "smooth"
-          });
-        }, 100);
+      if (autoScrollEnabled || force) {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
       }
     }
 
