@@ -2,8 +2,7 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport"
-    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Chatbot IA</title>
   <style>
     :root {
@@ -15,19 +14,15 @@
       --vh: 1vh;
     }
 
-    * {
-      box-sizing: border-box;
-      font-family: 'Poppins', sans-serif;
-    }
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
 
     body {
       margin: 0;
       background: var(--fondo);
-      height: calc(var(--vh, 1vh) * 70); /* 🔽 reducido para que quepa entero */
+      height: calc(var(--vh, 1vh) * 100);
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow: hidden;
     }
 
     /* ✅ Contenedor principal con bordes visibles */
@@ -35,22 +30,21 @@
       display: flex;
       flex-direction: column;
       justify-content: space-between;
-      height: calc(var(--vh, 1vh) * 95); /* 🔽 reducido ligeramente */
+      height: calc(var(--vh, 1vh) * 100);
       width: 100%;
       border-left: 3px solid var(--morado);
       border-right: 3px solid var(--morado);
       border-bottom: 3px solid var(--morado);
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.05);
       border-radius: 0;
       background: var(--fondo);
-      overflow: hidden;
     }
 
     .header {
       height: 30px;
       background: linear-gradient(180deg, var(--morado) 0%, var(--morado-oscuro) 100%);
       border-radius: 0;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       flex-shrink: 0;
     }
 
@@ -61,8 +55,8 @@
       padding: 14px;
       overflow-y: auto;
       gap: 10px;
+      scroll-behavior: smooth;
       position: relative;
-      -webkit-overflow-scrolling: touch;
     }
 
     .chat::before {
@@ -73,8 +67,7 @@
       transform: translate(-50%, -50%);
       width: 220px;
       height: 220px;
-      background: url('https://raw.githubusercontent.com/FranciscoCerrato/chatbot-mama/main/LOGO%20SIN%20FONDO.png')
-        center center no-repeat;
+      background: url('https://raw.githubusercontent.com/FranciscoCerrato/chatbot-mama/main/LOGO%20SIN%20FONDO.png') center center no-repeat;
       background-size: contain;
       opacity: 0.12;
       pointer-events: none;
@@ -94,10 +87,7 @@
     }
 
     @keyframes fadeIn {
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
+      to { opacity: 1; transform: translateY(0); }
     }
 
     .user {
@@ -120,7 +110,7 @@
       border-top: 1px solid var(--borde);
       padding: 12px;
       background: #fff;
-      box-shadow: 0 -4px 10px rgba(0, 0, 0, 0.05);
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
       flex-shrink: 0;
       z-index: 2;
     }
@@ -132,7 +122,6 @@
       border-radius: 10px;
       font-size: 15px;
       outline: none;
-      font-size-adjust: none;
     }
 
     button {
@@ -147,10 +136,7 @@
       box-shadow: 0 3px 8px rgba(124, 89, 164, 0.3);
     }
 
-    button:hover {
-      opacity: 0.9;
-      transform: scale(1.03);
-    }
+    button:hover { opacity: 0.9; transform: scale(1.03); }
   </style>
 </head>
 <body>
@@ -161,11 +147,132 @@
     <div class="chat" id="messages"></div>
 
     <div class="input-box">
-      <input id="prompt" type="text"
-        placeholder="Escribe un mensaje...   /   Skriv ett meddelande...   /   Write a message..."
-        autocomplete="off" />
+      <input id="prompt" type="text" placeholder="Escribe un mensaje...   /   Skriv ett meddelande...   /   Write a message..." autocomplete="off" />
       <button id="send">Enviar</button>
     </div>
   </div>
+
+  <script>
+    // Ajuste dinámico del viewport real en móviles
+    function setRealVH() {
+      const vh = window.innerHeight * 0.01;
+      document.documentElement.style.setProperty('--vh', `${vh}px`);
+    }
+    setRealVH();
+    window.addEventListener('resize', setRealVH);
+    window.visualViewport?.addEventListener('resize', setRealVH);
+
+    const WEBHOOK_URL = "https://n8n-n8n.dts4ar.easypanel.host/webhook/3879389e-9d57-4198-a403-c95b42860834";
+    const messagesEl = document.getElementById("messages");
+    const inputEl = document.getElementById("prompt");
+    const sendBtn = document.getElementById("send");
+
+  // 🚀 Control ultrarrápido de autoscroll
+let userScrolling = false;
+let autoScrollEnabled = true;
+
+// Detecta si el usuario está leyendo arriba
+messagesEl.addEventListener("scroll", () => {
+  const nearBottom =
+    messagesEl.scrollTop + messagesEl.clientHeight >= messagesEl.scrollHeight - 60;
+  autoScrollEnabled = nearBottom;
+  userScrolling = !nearBottom;
+});
+
+// Scroll inmediato y sin animación
+function scrollToEnd(force = false) {
+  if (autoScrollEnabled || force) {
+    messagesEl.scrollTop = messagesEl.scrollHeight;
+  }
+}
+    
+    const sessionId = (() => {
+      const key = "chat_session";
+      let v = localStorage.getItem(key);
+      if (!v) {
+        v = crypto.randomUUID ? crypto.randomUUID() : String(Date.now()) + Math.random();
+        localStorage.setItem(key, v);
+      }
+      return v;
+    })();
+
+    const history = [];
+
+    function addBubble(text, from = "bot", typingEffect = false) {
+      const div = document.createElement("div");
+      div.className = `bubble ${from === "user" ? "user" : "bot"}`;
+      div.style.whiteSpace = "pre-line";
+      messagesEl.appendChild(div);
+      scrollToEnd();
+
+      if (typingEffect && from === "bot") {
+        let i = 0;
+        const speed = 10;
+        const formattedText = text
+          .replace(/\\n/g, "<br>")
+          .replace(/\n/g, "<br>")
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        function typeChar() {
+          if (i <= formattedText.length) { // ✅ Corregido: muestra la última letra
+            div.innerHTML = formattedText.slice(0, i);
+            i++;
+            scrollToEnd();
+            if (i <= formattedText.length) {
+              setTimeout(typeChar, speed);
+            }
+          }
+        }
+        typeChar();
+      } else {
+        div.innerHTML = text
+          .replace(/\\n/g, "<br>")
+          .replace(/\n/g, "<br>")
+          .replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
+        scrollToEnd();
+      }
+      return div;
+    }
+
+    async function sendMessage() {
+      const text = (inputEl.value || "").trim();
+      if (!text) return;
+      addBubble(text, "user");
+      inputEl.value = "";
+      const typingEl = addBubble("Escribiendo...", "bot");
+
+      try {
+        const payload = { message: text, sessionId, history, source: "frontend" };
+        const res = await fetch(WEBHOOK_URL, {
+          method: "POST",
+          mode: "cors",
+          headers: { "Content-Type": "application/json", "Accept": "*/*" },
+          body: JSON.stringify(payload)
+        });
+
+        const rawText = await res.text();
+        let replyText = rawText;
+        try {
+          const data = JSON.parse(rawText);
+          replyText = data.reply || data.text || data.data || JSON.stringify(data);
+        } catch {}
+
+        typingEl.remove();
+        addBubble(replyText || "Sin respuesta del servidor.", "bot", true);
+
+      } catch (err) {
+        console.error("Error de conexión:", err);
+        typingEl.remove();
+        addBubble("Error de conexión con el servidor.", "bot");
+      }
+    }
+
+    sendBtn.addEventListener("click", sendMessage);
+    inputEl.addEventListener("keydown", e => {
+      if (e.key === "Enter" && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  </script>
 </body>
 </html>
